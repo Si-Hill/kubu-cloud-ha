@@ -1,8 +1,9 @@
 """Minimal async client for the Kubu cloud API (api-green.kubusmart.com).
 
-Endpoints used (both observed from the official app's traffic shape):
+Endpoints used (worked out from community integrations and the shape of the replies):
   POST /oauth/login            {"email", "password"} -> idToken, expiresIn, homes[]
-  GET  /view/rooms?homeId=...  Bearer idToken       -> things[], rooms[], entities[], ...
+  GET  /view/rooms?homeId=...  Bearer idToken       -> rooms[], entities[], zones[], ...
+  GET  /view/rooms             Bearer idToken       -> the default home, plus things[] (hubs)
 """
 
 from __future__ import annotations
@@ -31,6 +32,13 @@ class KubuConnectionError(KubuError):
     """Cloud unreachable or returned something unexpected."""
 
 
+def _describe(err: Exception) -> str:
+    """Short error text for logs, without the request URL (it carries the home id)."""
+    if isinstance(err, aiohttp.ClientResponseError):
+        return f"HTTP {err.status}"
+    return str(err) or type(err).__name__
+
+
 class KubuClient:
     """Signs in with email/password and reads the home dashboard."""
 
@@ -43,7 +51,6 @@ class KubuClient:
         self._token: str | None = None
         self._token_expiry: float = 0.0
         self._lock = asyncio.Lock()
-        self.account_id: str | None = None
         self.homes: list[dict[str, Any]] = []
 
     async def async_login(self) -> dict[str, Any]:
@@ -61,7 +68,7 @@ class KubuClient:
         except KubuAuthError:
             raise
         except (aiohttp.ClientError, TimeoutError, ValueError) as err:
-            raise KubuConnectionError(f"login failed: {err}") from err
+            raise KubuConnectionError(f"login failed: {_describe(err)}") from err
 
         if not isinstance(data, dict):
             raise KubuConnectionError("login reply was not an object")
@@ -74,7 +81,6 @@ class KubuClient:
         # Renew a minute early so a poll never races the expiry.
         self._token = token
         self._token_expiry = time.monotonic() + max(lifetime - 60, 60)
-        self.account_id = str(data.get("id") or self._email.lower())
         self.homes = [h for h in data.get("homes") or [] if isinstance(h, dict)]
         return data
 
@@ -87,6 +93,10 @@ class KubuClient:
 
     async def async_get_dashboard(self, home_id: str | None) -> dict[str, Any]:
         """Return /view/rooms, re-signing in once on 401/403.
+
+        A second refusal straight after a successful sign-in is not a credentials
+        problem (a rejected login raises KubuAuthError by itself), so it is
+        reported as a connection error and simply retried on the next poll.
 
         With a home_id the reply covers that home's rooms and sensors but has no
         hub ("things") list; without one it is the account's default home and
@@ -107,14 +117,16 @@ class KubuClient:
                         self._token = None
                         continue
                     if resp.status in (401, 403):
-                        raise KubuAuthError(f"dashboard refused (HTTP {resp.status})")
+                        raise KubuConnectionError(
+                            f"dashboard refused (HTTP {resp.status}) after a fresh sign-in"
+                        )
                     resp.raise_for_status()
                     data = await resp.json(content_type=None)
-            except KubuAuthError:
-                raise
             except (aiohttp.ClientError, TimeoutError, ValueError) as err:
-                raise KubuConnectionError(f"dashboard request failed: {err}") from err
+                raise KubuConnectionError(
+                    f"dashboard request failed: {_describe(err)}"
+                ) from err
             if not isinstance(data, dict):
                 raise KubuConnectionError("dashboard reply was not an object")
             return data
-        raise KubuAuthError("could not obtain a valid token")
+        raise KubuConnectionError("dashboard request was not completed")

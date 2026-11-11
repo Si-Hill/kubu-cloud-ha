@@ -21,20 +21,12 @@ from .const import (
     HUB_REFRESH_INTERVAL,
     LOCKED_STATUSES,
     OPEN_STATUSES,
-    TAMPER_STATUSES,
     UNLOCKED_STATUSES,
 )
 from .model import KubuHome, parse_dashboard
 
 _LOGGER = logging.getLogger(__name__)
-_KNOWN = (
-    OPEN_STATUSES
-    | CLOSED_STATUSES
-    | LOCKED_STATUSES
-    | UNLOCKED_STATUSES
-    | TAMPER_STATUSES
-    | {"unsecure", "insecure"}
-)
+_KNOWN = OPEN_STATUSES | CLOSED_STATUSES | LOCKED_STATUSES | UNLOCKED_STATUSES
 
 type KubuConfigEntry = ConfigEntry["KubuCoordinator"]
 
@@ -113,7 +105,8 @@ class KubuCoordinator(DataUpdateCoordinator[KubuHome]):
                 self._unknown_logged.add(key)
                 _LOGGER.warning(
                     "Kubu sensor '%s' (%s) reported status '%s' which this integration "
-                    "doesn't map yet; the Status sensor shows it, binary sensors show unknown",
+                    "doesn't map yet; the Status sensor shows it, Door/Window and Lock show "
+                    "unknown and Security shows Unsafe",
                     sensor.name,
                     sensor.kind,
                     sensor.status,

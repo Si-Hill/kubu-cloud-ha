@@ -1,4 +1,4 @@
-"""Tests against a dashboard shaped like Simon's real /view/rooms reply (values invented)."""
+"""Tests against dashboards shaped like real /view/rooms replies (values invented)."""
 
 from unittest.mock import patch
 
@@ -9,7 +9,11 @@ from homeassistant.core import HomeAssistant
 from homeassistant.data_entry_flow import FlowResultType
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
-from custom_components.kubu_cloud.api import KubuAuthError
+from custom_components.kubu_cloud.api import (
+    KubuAuthError,
+    KubuClient,
+    KubuConnectionError,
+)
 from custom_components.kubu_cloud.const import CONF_HOME_ID, DOMAIN
 
 HOME = "h" * 32
@@ -49,12 +53,13 @@ def auto_enable_custom_integrations(enable_custom_integrations):
 
 async def _login(self):
     self.homes = LOGIN["homes"]
-    self.account_id = LOGIN["id"]
     self._token = "x"
     return LOGIN
 
 
-async def test_flow_and_entities(hass: HomeAssistant) -> None:
+async def test_flow_and_entities(
+    hass: HomeAssistant, caplog: pytest.LogCaptureFixture
+) -> None:
     state = {"d": dash()}
 
     async def _dash(self, home_id):
@@ -80,7 +85,6 @@ async def test_flow_and_entities(hass: HomeAssistant) -> None:
         await hass.async_block_till_done()
 
         states = {s.entity_id: s.state for s in hass.states.async_all()}
-        print("\n".join(f"{k} = {v}" for k, v in sorted(states.items())))
 
         # std-d door sensors only report lock state, so Door stays unknown for them.
         assert states["binary_sensor.front_door_door"] == "unknown"
@@ -110,12 +114,16 @@ async def test_flow_and_entities(hass: HomeAssistant) -> None:
         assert hass.states.get("binary_sensor.lounge_window_window").state == "off"
         assert hass.states.get("binary_sensor.lounge_window_security").state == "on"
 
-        # Unknown status -> raw sensor shows it, binaries unknown.
-        state["d"] = dash(door="weird")
+        # Unknown status -> raw sensor shows it, Door/Lock unknown, Security unsafe,
+        # and the word is logged once. "tamper" must not be silently accepted.
+        state["d"] = dash(door="tamper")
         await coord.async_refresh()
         await hass.async_block_till_done()
-        assert hass.states.get("sensor.front_door_status").state == "Weird"
+        assert hass.states.get("sensor.front_door_status").state == "Tamper"
+        assert hass.states.get("binary_sensor.front_door_door").state == "unknown"
         assert hass.states.get("binary_sensor.front_door_lock").state == "unknown"
+        assert hass.states.get("binary_sensor.front_door_security").state == "on"
+        assert "reported status 'tamper'" in caplog.text
 
         # Window goes offline -> its state entities unavailable, Online/Status remain.
         state["d"] = dash(win_online=False)
@@ -193,3 +201,47 @@ async def test_hubs_are_cached_between_polls(hass: HomeAssistant) -> None:
         coord._hubs_fetched -= 10_000
         await coord.async_refresh()
         assert calls["default"] == 2
+
+
+class _Resp:
+    def __init__(self, status, payload):
+        self.status, self._payload = status, payload
+
+    async def __aenter__(self):
+        return self
+
+    async def __aexit__(self, *exc):
+        return False
+
+    def raise_for_status(self):
+        assert self.status < 400
+
+    async def json(self, content_type=None):
+        return self._payload
+
+
+class _Session:
+    """Stands in for aiohttp: login always works, the dashboard returns `statuses`."""
+
+    def __init__(self, statuses):
+        self.statuses, self.logins = list(statuses), 0
+
+    def post(self, url, **kwargs):
+        self.logins += 1
+        return _Resp(200, LOGIN)
+
+    def get(self, url, **kwargs):
+        return _Resp(self.statuses.pop(0), dash())
+
+
+async def test_refusal_after_fresh_login_is_not_an_auth_error() -> None:
+    # 403 twice, with a good sign-in in between: a block or outage, not bad credentials.
+    session = _Session([403, 403])
+    with pytest.raises(KubuConnectionError):
+        await KubuClient(session, "a@b.com", "pw").async_get_dashboard(HOME)
+    assert session.logins == 2
+
+    # A stale token is refused once, then the fresh one works.
+    session = _Session([401, 200])
+    data = await KubuClient(session, "a@b.com", "pw").async_get_dashboard(HOME)
+    assert data["homeName"] == "Home"

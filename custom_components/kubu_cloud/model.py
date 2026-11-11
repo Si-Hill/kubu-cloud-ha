@@ -9,7 +9,6 @@ from .const import (
     CLOSED_STATUSES,
     LOCKED_STATUSES,
     OPEN_STATUSES,
-    TAMPER_STATUSES,
     UNLOCKED_STATUSES,
 )
 
@@ -31,7 +30,6 @@ class KubuHub:
     hw: str | None
     online: bool | None
     last_connected: str | None
-    nodes_count: int | None
 
 
 @dataclass(slots=True)
@@ -42,7 +40,6 @@ class KubuSensor:
     product_type: str | None  # "std-d", "std-w", ...
     status: str | None  # raw: "locked", "secure", "unsecure", ...
     battery_status: str | None
-    battery_reported: str | None
     online: bool | None
     updated_on: str | None
     room: str | None
@@ -76,18 +73,17 @@ class KubuSensor:
 
     @property
     def is_insecure(self) -> bool | None:
-        """True when not in its fully secured state (locked door / secure window)."""
+        """True when not in its fully secured state (locked door / secure window).
+
+        An unrecognised status counts as not secured: it is safer to show
+        "Unsafe" than to claim a door or window is secure when we cannot tell.
+        """
         s = self.status_key
         if s is None:
             return None
         if self.kind == "door":
             return s not in LOCKED_STATUSES
         return s not in {"secure", "locked"}
-
-    @property
-    def is_tampered(self) -> bool | None:
-        s = self.status_key
-        return None if s is None else s in TAMPER_STATUSES
 
 
 @dataclass(slots=True)
@@ -114,7 +110,6 @@ def parse_dashboard(home_id: str, home_name: str, data: dict[str, Any]) -> KubuH
     for thing in data.get("things") or []:
         if not isinstance(thing, dict) or not _str(thing.get("id")):
             continue
-        count = thing.get("nodesCount")
         hub = KubuHub(
             id=thing["id"],
             name=_str(thing.get("name")) or "Kubu hub",
@@ -123,7 +118,6 @@ def parse_dashboard(home_id: str, home_name: str, data: dict[str, Any]) -> KubuH
             hw=_str(thing.get("hwRev")),
             online=_bool(thing.get("isOnline")),
             last_connected=_str(thing.get("lastConnected")),
-            nodes_count=count if isinstance(count, int) else None,
         )
         home.hubs[hub.id] = hub
 
@@ -147,7 +141,6 @@ def parse_dashboard(home_id: str, home_name: str, data: dict[str, Any]) -> KubuH
             product_type=_str(ent.get("productType")),
             status=_str(ent.get("status")),
             battery_status=_str(ent.get("batteryStatus")),
-            battery_reported=_str(ent.get("batRepDate")),
             online=_bool(ent.get("isOnline")),
             updated_on=_str(ent.get("updatedOn")),
             room=room_names.get(ent.get("roomId") or "") or None,

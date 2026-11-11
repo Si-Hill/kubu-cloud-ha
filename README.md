@@ -5,7 +5,7 @@
 # Kubu Cloud (Unofficial)
 
 <p align="center">
-  <img src="https://img.shields.io/badge/HOME%20ASSISTANT-2025.2%2B-41BDF5?style=for-the-badge&logo=homeassistant&logoColor=white" alt="Home Assistant 2025.2+">
+  <img src="https://img.shields.io/badge/HOME%20ASSISTANT-2025.3%2B-41BDF5?style=for-the-badge&logo=homeassistant&logoColor=white" alt="Home Assistant 2025.3+">
   <img src="https://img.shields.io/badge/HACS-CUSTOM-orange?style=for-the-badge" alt="HACS Custom">
   <a href="https://github.com/Si-Hill/kubu-cloud-ha/releases/latest"><img src="https://img.shields.io/github/v/release/Si-Hill/kubu-cloud-ha?style=for-the-badge&label=STABLE&color=4c1" alt="Latest release"></a>
   <img src="https://img.shields.io/github/license/Si-Hill/kubu-cloud-ha?style=for-the-badge&label=LICENSE" alt="License">
@@ -18,7 +18,7 @@ Not affiliated with or endorsed by Kubu. If your sensors are the Bluetooth "Retr
 
 ## Prerequisites
 
-- Home Assistant 2025.2 or newer
+- Home Assistant 2025.3 or newer
 - A Kubu account (the one you use in the Kubu app)
 - Hub-connected Kubu door or window sensors (not the Bluetooth "Retro" range)
 
@@ -106,7 +106,7 @@ These are the words the Kubu cloud has reported so far. The Status sensor shows 
 
 Battery status words seen: `Good`, `Low`, `Critical`.
 
-Anything else (for example a vent or tilt position, or a tamper alert) is logged once as a warning and shown as-is on the Status sensor, while the binary sensors show *unknown*. Please [open an issue](https://github.com/Si-Hill/kubu-cloud-ha/issues) with any new words you see.
+Anything else (for example a vent or tilt position, or a tamper alert) is logged once as a warning and shown as-is on the Status sensor. Door, Window and Lock then show *unknown*, and Security shows *Unsafe*, because an unrecognised state is not treated as secure. Please [open an issue](https://github.com/Si-Hill/kubu-cloud-ha/issues) with any new words you see.
 
 ## Options
 
