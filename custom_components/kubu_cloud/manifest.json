@@ -1,6 +1,7 @@
 {
   "domain": "kubu_cloud",
   "name": "Kubu Cloud (Unofficial)",
+  "categories": ["sensors.door_window"],
   "codeowners": ["@Si-Hill"],
   "config_flow": true,
   "documentation": "https://github.com/Si-Hill/kubu-cloud-ha",
