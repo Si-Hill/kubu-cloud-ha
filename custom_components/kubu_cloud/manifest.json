@@ -1,12 +1,12 @@
 {
   "domain": "kubu_cloud",
   "name": "Kubu Cloud (Unofficial)",
-  "codeowners": [],
-  "issue_tracker": "https://github.com/Si-Hill/kubu-cloud-ha/issues",
+  "codeowners": ["@Si-Hill"],
   "config_flow": true,
   "documentation": "https://github.com/Si-Hill/kubu-cloud-ha",
   "integration_type": "hub",
   "iot_class": "cloud_polling",
+  "issue_tracker": "https://github.com/Si-Hill/kubu-cloud-ha/issues",
   "requirements": [],
   "version": "0.1.3"
 }
