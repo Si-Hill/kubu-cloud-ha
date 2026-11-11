@@ -42,7 +42,7 @@
       "door": { "name": "Door" },
       "window": { "name": "Window" },
       "lock": { "name": "Lock" },
-      "insecure": { "name": "Not secure" },
+      "insecure": { "name": "Security" },
       "online": { "name": "Online" },
       "hub_online": { "name": "Online" },
       "armed": { "name": "SureShield armed" }

@@ -47,6 +47,35 @@ No SSH, no manual token extraction, no YAML.
 
 Open **Settings → Devices & Services → Kubu Cloud**. You should see a hub device and one device per sensor, and the hub's **Online** sensor should be on. (**Last connected** shows when the hub last reconnected to the Kubu cloud, so it can be hours old on a healthy hub.) If something looks wrong, check **Settings → System → Logs** for errors from `kubu_cloud`.
 
+## Screenshots
+
+Device pages in Home Assistant.
+
+**Door sensor**
+
+<table>
+  <tr>
+    <td align="center"><img src="https://raw.githubusercontent.com/Si-Hill/kubu-cloud-ha/main/docs/images/door-locked.png" alt="Door sensor, locked" width="260"><br><sub>Locked</sub></td>
+    <td align="center"><img src="https://raw.githubusercontent.com/Si-Hill/kubu-cloud-ha/main/docs/images/door-unlocked.png" alt="Door sensor, unlocked" width="260"><br><sub>Unlocked</sub></td>
+  </tr>
+</table>
+
+**Window sensor**
+
+<table>
+  <tr>
+    <td align="center"><img src="https://raw.githubusercontent.com/Si-Hill/kubu-cloud-ha/main/docs/images/window-secure.png" alt="Window sensor, secure" width="240"><br><sub>Secure</sub></td>
+    <td align="center"><img src="https://raw.githubusercontent.com/Si-Hill/kubu-cloud-ha/main/docs/images/window-closed.png" alt="Window sensor, closed" width="240"><br><sub>Closed (not yet secure)</sub></td>
+    <td align="center"><img src="https://raw.githubusercontent.com/Si-Hill/kubu-cloud-ha/main/docs/images/window-open.png" alt="Window sensor, open" width="240"><br><sub>Open</sub></td>
+  </tr>
+</table>
+
+**Hub**
+
+<p>
+  <img src="https://raw.githubusercontent.com/Si-Hill/kubu-cloud-ha/main/docs/images/hub.png" alt="Kubu hub" width="260">
+</p>
+
 ## Entities
 
 | Device | Entity | Notes |
@@ -54,14 +83,14 @@ Open **Settings → Devices & Services → Kubu Cloud**. You should see a hub de
 | Window sensor | Window | On = open |
 | Door sensor | Door | On = open. The `std-d` door sensor reports lock state only, so this shows *unknown* for it; kept for door sensors that do report open/closed |
 | Door sensor | Lock | On = unlocked |
-| Door / window sensor | Not secure | On when not locked (door) or not `secure` (window; it reads `closed` for about a minute after shutting) |
+| Door / window sensor | Security | Shows *Unsafe* when a door is not locked, or a window is not `secure` (a window reads `closed` for about a minute after shutting), otherwise *Safe* |
 | Door / window sensor | Status | Status text from Kubu, capitalised (see [Status words](#status-words)) |
 | Door / window sensor | Battery | Battery text from Kubu, capitalised (`Good`, `Low`, `Critical`) |
 | Door / window sensor | Last update, Online | Diagnostic |
 | Hub | Online, Last connected | Diagnostic. Refreshed every 10 minutes (see [Options](#options)) |
 | Hub | SureShield armed | Read-only. Refreshed every poll |
 
-When a sensor is offline its Door/Window, Lock and Not secure entities show *unavailable* rather than a stale state.
+When a sensor is offline its Door/Window, Lock and Security entities show *unavailable* rather than a stale state.
 
 ## Status words
 

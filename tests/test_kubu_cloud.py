@@ -85,7 +85,7 @@ async def test_flow_and_entities(hass: HomeAssistant) -> None:
         # std-d door sensors only report lock state, so Door stays unknown for them.
         assert states["binary_sensor.front_door_door"] == "unknown"
         assert states["binary_sensor.front_door_lock"] == "off"  # locked
-        assert states["binary_sensor.front_door_not_secure"] == "off"
+        assert states["binary_sensor.front_door_security"] == "off"
         assert states["binary_sensor.lounge_window_window"] == "off"
         assert states["sensor.front_door_status"] == "Locked"
         assert states["sensor.front_door_battery"] == "Low"
@@ -99,7 +99,7 @@ async def test_flow_and_entities(hass: HomeAssistant) -> None:
         await coord.async_refresh()
         await hass.async_block_till_done()
         assert hass.states.get("binary_sensor.front_door_lock").state == "on"
-        assert hass.states.get("binary_sensor.front_door_not_secure").state == "on"
+        assert hass.states.get("binary_sensor.front_door_security").state == "on"
         assert hass.states.get("binary_sensor.lounge_window_window").state == "on"
 
         # Window shut but not yet latched: the real device reports "closed" for about
@@ -108,7 +108,7 @@ async def test_flow_and_entities(hass: HomeAssistant) -> None:
         await coord.async_refresh()
         await hass.async_block_till_done()
         assert hass.states.get("binary_sensor.lounge_window_window").state == "off"
-        assert hass.states.get("binary_sensor.lounge_window_not_secure").state == "on"
+        assert hass.states.get("binary_sensor.lounge_window_security").state == "on"
 
         # Unknown status -> raw sensor shows it, binaries unknown.
         state["d"] = dash(door="weird")
@@ -122,7 +122,7 @@ async def test_flow_and_entities(hass: HomeAssistant) -> None:
         await coord.async_refresh()
         await hass.async_block_till_done()
         assert hass.states.get("binary_sensor.lounge_window_window").state == "unavailable"
-        assert hass.states.get("binary_sensor.lounge_window_not_secure").state == "unavailable"
+        assert hass.states.get("binary_sensor.lounge_window_security").state == "unavailable"
         assert hass.states.get("binary_sensor.lounge_window_online").state == "off"
         assert hass.states.get("sensor.lounge_window_status").state == "Secure"
 
