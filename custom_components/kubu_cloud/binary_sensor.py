@@ -27,6 +27,8 @@ PARALLEL_UPDATES = 0
 class KubuSensorBinaryDescription(BinarySensorEntityDescription):
     value_fn: Callable[[KubuSensor], bool | None]
     supported_fn: Callable[[KubuSensor], bool] = lambda s: True
+    # When the sensor is offline its last status is stale, so show unavailable.
+    needs_online: bool = True
 
 
 SENSOR_BINARIES: tuple[KubuSensorBinaryDescription, ...] = (
@@ -63,6 +65,7 @@ SENSOR_BINARIES: tuple[KubuSensorBinaryDescription, ...] = (
         device_class=BinarySensorDeviceClass.CONNECTIVITY,
         entity_category=EntityCategory.DIAGNOSTIC,
         value_fn=lambda s: s.online,
+        needs_online=False,
     ),
 )
 
@@ -112,6 +115,12 @@ class KubuSensorBinary(KubuSensorEntity, BinarySensorEntity):
     ) -> None:
         super().__init__(coordinator, sensor_id, description.key)
         self.entity_description = description
+
+    @property
+    def available(self) -> bool:
+        if not super().available:
+            return False
+        return not (self.entity_description.needs_online and self.sensor.online is False)
 
     @property
     def is_on(self) -> bool | None:

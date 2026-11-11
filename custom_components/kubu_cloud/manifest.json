@@ -2,10 +2,11 @@
   "domain": "kubu_cloud",
   "name": "Kubu Cloud (hub sensors, unofficial)",
   "codeowners": [],
+  "issue_tracker": "https://github.com/Si-Hill/kubu-cloud-ha/issues",
   "config_flow": true,
-  "documentation": "https://getkubu.com",
+  "documentation": "https://github.com/Si-Hill/kubu-cloud-ha",
   "integration_type": "hub",
   "iot_class": "cloud_polling",
   "requirements": [],
-  "version": "0.1.0"
+  "version": "0.1.1"
 }

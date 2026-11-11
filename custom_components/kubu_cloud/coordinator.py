@@ -28,6 +28,16 @@ _KNOWN = OPEN_STATUSES | CLOSED_STATUSES | TAMPER_STATUSES | {"unsecure", "insec
 type KubuConfigEntry = ConfigEntry["KubuCoordinator"]
 
 
+def _is_same_home(dashboard: dict, home_id: str) -> bool:
+    """True if a /view/rooms reply's sensors or rooms belong to home_id."""
+    items = list(dashboard.get("entities") or []) + list(dashboard.get("rooms") or [])
+    ids = {i.get("homeId") for i in items if isinstance(i, dict) and i.get("homeId")}
+    if ids:
+        return ids == {home_id}
+    homes = [h for h in dashboard.get("homes") or [] if isinstance(h, dict)]
+    return len(homes) == 1 and homes[0].get("id") == home_id
+
+
 class KubuCoordinator(DataUpdateCoordinator[KubuHome]):
     """Fetch /view/rooms on an interval."""
 
@@ -51,6 +61,12 @@ class KubuCoordinator(DataUpdateCoordinator[KubuHome]):
     async def _async_update_data(self) -> KubuHome:
         try:
             raw = await self.client.async_get_dashboard(self.home_id)
+            if not raw.get("things"):
+                # The per-home reply omits hubs; the default-home reply has them.
+                # Only borrow them if that reply is about this same home.
+                default = await self.client.async_get_dashboard(None)
+                if _is_same_home(default, self.home_id):
+                    raw = {**raw, "things": default.get("things") or []}
         except KubuAuthError as err:
             raise ConfigEntryAuthFailed(str(err)) from err
         except KubuConnectionError as err:

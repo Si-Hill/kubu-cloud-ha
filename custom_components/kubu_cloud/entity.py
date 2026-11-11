@@ -32,14 +32,12 @@ class KubuSensorEntity(KubuEntity):
         self._sensor_id = sensor_id
         self._attr_unique_id = f"{sensor_id}_{key}"
         s = self.sensor
-        hubs = list(coordinator.data.hubs)
         self._attr_device_info = DeviceInfo(
             identifiers={(DOMAIN, sensor_id)},
             name=s.name,
             manufacturer=MANUFACTURER,
             model=PRODUCT_NAMES.get(s.product_type or "", s.product_type or s.kind),
             suggested_area=s.room,
-            via_device=(DOMAIN, hubs[0]) if len(hubs) == 1 else None,
         )
 
     @property

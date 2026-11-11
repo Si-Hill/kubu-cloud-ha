@@ -85,14 +85,20 @@ class KubuClient:
             assert self._token
             return self._token
 
-    async def async_get_dashboard(self, home_id: str) -> dict[str, Any]:
-        """Return /view/rooms for one home, re-signing in once on 401/403."""
+    async def async_get_dashboard(self, home_id: str | None) -> dict[str, Any]:
+        """Return /view/rooms, re-signing in once on 401/403.
+
+        With a home_id the reply covers that home's rooms and sensors but has no
+        hub ("things") list; without one it is the account's default home and
+        does include the hubs.
+        """
+        params = {"homeId": home_id} if home_id else None
         for attempt in (1, 2):
             token = await self._async_ensure_token()
             try:
                 async with self._session.get(
                     f"{API_BASE}/view/rooms",
-                    params={"homeId": home_id},
+                    params=params,
                     headers={"Authorization": f"Bearer {token}"},
                     timeout=aiohttp.ClientTimeout(total=DEFAULT_TIMEOUT),
                 ) as resp:
