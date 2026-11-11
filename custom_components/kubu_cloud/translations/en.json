@@ -1,0 +1,57 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Sign in to Kubu",
+        "description": "Reads your hub-connected Kubu door and window sensors from the Kubu cloud. Your login is stored in Home Assistant so it can sign in again when its session expires.",
+        "data": { "email": "Email", "password": "Password" }
+      },
+      "home": {
+        "title": "Choose a home",
+        "data": { "home_id": "Home" }
+      },
+      "reauth_confirm": {
+        "title": "Sign in to Kubu again",
+        "description": "Kubu refused the saved login. Enter it again.",
+        "data": { "email": "Email", "password": "Password" }
+      }
+    },
+    "error": {
+      "invalid_auth": "Wrong email or password.",
+      "cannot_connect": "Couldn't reach the Kubu cloud. Try again shortly.",
+      "no_homes": "Signed in, but this account has no Kubu homes.",
+      "wrong_account": "That login doesn't have access to this home.",
+      "unknown": "Unexpected error, check the Home Assistant log."
+    },
+    "abort": {
+      "already_configured": "This Kubu home is already set up.",
+      "reauth_successful": "Signed in again."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Kubu Cloud options",
+        "data": { "scan_interval": "Poll interval (seconds)" },
+        "data_description": { "scan_interval": "How often to ask the Kubu cloud for sensor states. Minimum 30." }
+      }
+    }
+  },
+  "entity": {
+    "binary_sensor": {
+      "door": { "name": "Door" },
+      "window": { "name": "Window" },
+      "lock": { "name": "Lock" },
+      "insecure": { "name": "Not secure" },
+      "online": { "name": "Online" },
+      "hub_online": { "name": "Online" },
+      "armed": { "name": "SureShield armed" }
+    },
+    "sensor": {
+      "status": { "name": "Status" },
+      "battery_status": { "name": "Battery" },
+      "last_update": { "name": "Last update" },
+      "hub_last_connected": { "name": "Last connected" }
+    }
+  }
+}
