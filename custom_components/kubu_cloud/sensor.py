@@ -35,6 +35,11 @@ def _ts(value: str | None) -> datetime | None:
     return parsed
 
 
+def _cap(value: str | None) -> str | None:
+    """Capitalise the first letter ('secure' -> 'Secure') for display."""
+    return value[:1].upper() + value[1:] if value else None
+
+
 @dataclass(frozen=True, kw_only=True)
 class KubuSensorDescription(SensorEntityDescription):
     value_fn: Callable[[KubuSensor], str | datetime | None]
@@ -44,13 +49,13 @@ SENSORS: tuple[KubuSensorDescription, ...] = (
     KubuSensorDescription(
         key="status",
         translation_key="status",
-        value_fn=lambda s: s.status,
+        value_fn=lambda s: _cap(s.status),
     ),
     KubuSensorDescription(
         key="battery_status",
         translation_key="battery_status",
         entity_category=EntityCategory.DIAGNOSTIC,
-        value_fn=lambda s: s.battery_status,
+        value_fn=lambda s: _cap(s.battery_status),
     ),
     KubuSensorDescription(
         key="last_update",

@@ -51,9 +51,10 @@ Open **Settings → Devices & Services → Kubu Cloud**. You should see a hub de
 
 | Device | Entity | Notes |
 |---|---|---|
-| Door / window sensor | Door or Window | On = open |
+| Window sensor | Window | On = open |
+| Door sensor | Door | On = open. The `std-d` door sensor reports lock state only, so this shows *unknown* for it; kept for door sensors that do report open/closed |
 | Door sensor | Lock | On = unlocked |
-| Door / window sensor | Not secure | On when not in its fully secured state |
+| Door / window sensor | Not secure | On when not locked (door) or not `secure` (window; it reads `closed` for about a minute after shutting) |
 | Door / window sensor | Status | Raw status text from Kubu |
 | Door / window sensor | Battery | Raw battery status from Kubu |
 | Door / window sensor | Last update, Online | Diagnostic |
@@ -70,7 +71,7 @@ When a sensor is offline its Door/Window, Lock and Not secure entities show *una
 
 - This is cloud polling, so it needs internet access and follows whatever the Kubu cloud reports.
 - Your Kubu login is stored in Home Assistant so the integration can sign in again when the session expires. If Kubu rejects it you'll be asked to re-enter it.
-- Status words seen so far: `locked`, `secure`, `unsecure`. Unmapped words are logged once and shown as-is on the Status sensor; the open and lock binary sensors show *unknown* for them. Please [open an issue](https://github.com/Si-Hill/kubu-cloud-ha/issues) with any new status words you see.
+- Status words seen so far: doors report `locked` and `unlocked`; windows report `open`, `closed` and `secure`. Unmapped words (for example a vent or tilt position) are logged once and shown as-is on the Status sensor; the binary sensors show *unknown* for them. Please [open an issue](https://github.com/Si-Hill/kubu-cloud-ha/issues) with any new status words you see.
 - The integration icon needs a recent Home Assistant version; older ones show a placeholder.
 
 ## Licence

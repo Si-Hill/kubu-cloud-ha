@@ -19,13 +19,22 @@ from .const import (
     DEFAULT_SCAN_INTERVAL,
     DOMAIN,
     HUB_REFRESH_INTERVAL,
+    LOCKED_STATUSES,
     OPEN_STATUSES,
     TAMPER_STATUSES,
+    UNLOCKED_STATUSES,
 )
 from .model import KubuHome, parse_dashboard
 
 _LOGGER = logging.getLogger(__name__)
-_KNOWN = OPEN_STATUSES | CLOSED_STATUSES | TAMPER_STATUSES | {"unsecure", "insecure"}
+_KNOWN = (
+    OPEN_STATUSES
+    | CLOSED_STATUSES
+    | LOCKED_STATUSES
+    | UNLOCKED_STATUSES
+    | TAMPER_STATUSES
+    | {"unsecure", "insecure"}
+)
 
 type KubuConfigEntry = ConfigEntry["KubuCoordinator"]
 

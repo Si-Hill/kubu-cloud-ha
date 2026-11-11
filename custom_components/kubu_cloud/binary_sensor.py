@@ -32,6 +32,8 @@ class KubuSensorBinaryDescription(BinarySensorEntityDescription):
 
 
 SENSOR_BINARIES: tuple[KubuSensorBinaryDescription, ...] = (
+    # The std-d door sensor only reports lock state (this stays "unknown" for it), but
+    # other Kubu door sensors may report open/closed, so the entity is kept.
     KubuSensorBinaryDescription(
         key="door",
         translation_key="door",

@@ -82,12 +82,13 @@ async def test_flow_and_entities(hass: HomeAssistant) -> None:
         states = {s.entity_id: s.state for s in hass.states.async_all()}
         print("\n".join(f"{k} = {v}" for k, v in sorted(states.items())))
 
-        assert states["binary_sensor.front_door_door"] == "off"
+        # std-d door sensors only report lock state, so Door stays unknown for them.
+        assert states["binary_sensor.front_door_door"] == "unknown"
         assert states["binary_sensor.front_door_lock"] == "off"  # locked
         assert states["binary_sensor.front_door_not_secure"] == "off"
         assert states["binary_sensor.lounge_window_window"] == "off"
-        assert states["sensor.front_door_status"] == "locked"
-        assert states["sensor.front_door_battery"] == "low"
+        assert states["sensor.front_door_status"] == "Locked"
+        assert states["sensor.front_door_battery"] == "Low"
         assert states["binary_sensor.kubu_hub_online"] == "on"
         assert states["binary_sensor.kubu_hub_sureshield_armed"] == "off"
         assert states["sensor.kubu_hub_last_connected"].startswith("2026-11-11T08:00")
@@ -98,16 +99,23 @@ async def test_flow_and_entities(hass: HomeAssistant) -> None:
         await coord.async_refresh()
         await hass.async_block_till_done()
         assert hass.states.get("binary_sensor.front_door_lock").state == "on"
-        assert hass.states.get("binary_sensor.front_door_door").state == "off"
         assert hass.states.get("binary_sensor.front_door_not_secure").state == "on"
         assert hass.states.get("binary_sensor.lounge_window_window").state == "on"
+
+        # Window shut but not yet latched: the real device reports "closed" for about
+        # a minute before "secure".
+        state["d"] = dash(window="closed")
+        await coord.async_refresh()
+        await hass.async_block_till_done()
+        assert hass.states.get("binary_sensor.lounge_window_window").state == "off"
+        assert hass.states.get("binary_sensor.lounge_window_not_secure").state == "on"
 
         # Unknown status -> raw sensor shows it, binaries unknown.
         state["d"] = dash(door="weird")
         await coord.async_refresh()
         await hass.async_block_till_done()
-        assert hass.states.get("sensor.front_door_status").state == "weird"
-        assert hass.states.get("binary_sensor.front_door_door").state == "unknown"
+        assert hass.states.get("sensor.front_door_status").state == "Weird"
+        assert hass.states.get("binary_sensor.front_door_lock").state == "unknown"
 
         # Window goes offline -> its state entities unavailable, Online/Status remain.
         state["d"] = dash(win_online=False)
@@ -116,7 +124,7 @@ async def test_flow_and_entities(hass: HomeAssistant) -> None:
         assert hass.states.get("binary_sensor.lounge_window_window").state == "unavailable"
         assert hass.states.get("binary_sensor.lounge_window_not_secure").state == "unavailable"
         assert hass.states.get("binary_sensor.lounge_window_online").state == "off"
-        assert hass.states.get("sensor.lounge_window_status").state == "secure"
+        assert hass.states.get("sensor.lounge_window_status").state == "Secure"
 
 
 async def test_bad_login(hass: HomeAssistant) -> None:
