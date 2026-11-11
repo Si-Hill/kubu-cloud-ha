@@ -1,3 +1,5 @@
+<p align="center"><img src="custom_components/kubu_cloud/brand/logo.png" alt="Kubu" width="300"></p>
+
 # Kubu Cloud (hub sensors, unofficial)
 
 Home Assistant custom integration for **hub-connected Kubu door and window sensors**
