@@ -49,14 +49,14 @@ Open **Settings → Devices & Services → Kubu Cloud**. You should see a hub de
 
 ## Screenshots
 
-Device pages in Home Assistant.
+Device pages in Home Assistant. Click an image to enlarge it.
 
 **Door sensor**
 
 <table>
   <tr>
-    <td align="center"><img src="https://raw.githubusercontent.com/Si-Hill/kubu-cloud-ha/main/docs/images/door-locked.png" alt="Door sensor, locked" width="260"><br><sub>Locked</sub></td>
-    <td align="center"><img src="https://raw.githubusercontent.com/Si-Hill/kubu-cloud-ha/main/docs/images/door-unlocked.png" alt="Door sensor, unlocked" width="260"><br><sub>Unlocked</sub></td>
+    <td align="center"><a href="https://raw.githubusercontent.com/Si-Hill/kubu-cloud-ha/main/docs/images/door-locked.png"><img src="https://raw.githubusercontent.com/Si-Hill/kubu-cloud-ha/main/docs/images/door-locked.png" alt="Door sensor, locked" width="380"></a><br><sub>Locked</sub></td>
+    <td align="center"><a href="https://raw.githubusercontent.com/Si-Hill/kubu-cloud-ha/main/docs/images/door-unlocked.png"><img src="https://raw.githubusercontent.com/Si-Hill/kubu-cloud-ha/main/docs/images/door-unlocked.png" alt="Door sensor, unlocked" width="380"></a><br><sub>Unlocked</sub></td>
   </tr>
 </table>
 
@@ -64,16 +64,16 @@ Device pages in Home Assistant.
 
 <table>
   <tr>
-    <td align="center"><img src="https://raw.githubusercontent.com/Si-Hill/kubu-cloud-ha/main/docs/images/window-secure.png" alt="Window sensor, secure" width="240"><br><sub>Secure</sub></td>
-    <td align="center"><img src="https://raw.githubusercontent.com/Si-Hill/kubu-cloud-ha/main/docs/images/window-closed.png" alt="Window sensor, closed" width="240"><br><sub>Closed (not yet secure)</sub></td>
-    <td align="center"><img src="https://raw.githubusercontent.com/Si-Hill/kubu-cloud-ha/main/docs/images/window-open.png" alt="Window sensor, open" width="240"><br><sub>Open</sub></td>
+    <td align="center"><a href="https://raw.githubusercontent.com/Si-Hill/kubu-cloud-ha/main/docs/images/window-secure.png"><img src="https://raw.githubusercontent.com/Si-Hill/kubu-cloud-ha/main/docs/images/window-secure.png" alt="Window sensor, secure" width="250"></a><br><sub>Secure</sub></td>
+    <td align="center"><a href="https://raw.githubusercontent.com/Si-Hill/kubu-cloud-ha/main/docs/images/window-closed.png"><img src="https://raw.githubusercontent.com/Si-Hill/kubu-cloud-ha/main/docs/images/window-closed.png" alt="Window sensor, closed" width="250"></a><br><sub>Closed (not yet secure)</sub></td>
+    <td align="center"><a href="https://raw.githubusercontent.com/Si-Hill/kubu-cloud-ha/main/docs/images/window-open.png"><img src="https://raw.githubusercontent.com/Si-Hill/kubu-cloud-ha/main/docs/images/window-open.png" alt="Window sensor, open" width="250"></a><br><sub>Open</sub></td>
   </tr>
 </table>
 
 **Hub**
 
 <p>
-  <img src="https://raw.githubusercontent.com/Si-Hill/kubu-cloud-ha/main/docs/images/hub.png" alt="Kubu hub" width="260">
+  <a href="https://raw.githubusercontent.com/Si-Hill/kubu-cloud-ha/main/docs/images/hub.png"><img src="https://raw.githubusercontent.com/Si-Hill/kubu-cloud-ha/main/docs/images/hub.png" alt="Kubu hub" width="380"></a>
 </p>
 
 ## Entities
