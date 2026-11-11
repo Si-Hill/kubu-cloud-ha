@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from datetime import timedelta
 import logging
+import time
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
@@ -17,6 +18,7 @@ from .const import (
     CONF_SCAN_INTERVAL,
     DEFAULT_SCAN_INTERVAL,
     DOMAIN,
+    HUB_REFRESH_INTERVAL,
     OPEN_STATUSES,
     TAMPER_STATUSES,
 )
@@ -57,16 +59,39 @@ class KubuCoordinator(DataUpdateCoordinator[KubuHome]):
         self.client = client
         self.home_id: str = entry.data[CONF_HOME_ID]
         self._unknown_logged: set[str] = set()
+        self._hubs: list | None = None
+        self._hubs_fetched: float = 0.0
+
+    async def _async_get_hubs(self) -> list:
+        """Hub list borrowed from the default-home dashboard, cached.
+
+        The per-home reply omits hubs. Hub details change rarely, so the extra
+        request is only made every HUB_REFRESH_INTERVAL seconds. If a refresh
+        fails with a connection error the last known hubs are kept.
+        """
+        now = time.monotonic()
+        if self._hubs is not None and now - self._hubs_fetched < HUB_REFRESH_INTERVAL:
+            return self._hubs
+        try:
+            default = await self.client.async_get_dashboard(None)
+        except KubuConnectionError:
+            if self._hubs is not None:
+                return self._hubs
+            raise
+        # Only borrow them if that reply is about this same home.
+        self._hubs = (
+            list(default.get("things") or [])
+            if _is_same_home(default, self.home_id)
+            else []
+        )
+        self._hubs_fetched = now
+        return self._hubs
 
     async def _async_update_data(self) -> KubuHome:
         try:
             raw = await self.client.async_get_dashboard(self.home_id)
             if not raw.get("things"):
-                # The per-home reply omits hubs; the default-home reply has them.
-                # Only borrow them if that reply is about this same home.
-                default = await self.client.async_get_dashboard(None)
-                if _is_same_home(default, self.home_id):
-                    raw = {**raw, "things": default.get("things") or []}
+                raw = {**raw, "things": await self._async_get_hubs()}
         except KubuAuthError as err:
             raise ConfigEntryAuthFailed(str(err)) from err
         except KubuConnectionError as err:

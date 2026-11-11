@@ -14,6 +14,7 @@ CONF_SCAN_INTERVAL = "scan_interval"
 DEFAULT_SCAN_INTERVAL = 60  # seconds
 MIN_SCAN_INTERVAL = 30
 DEFAULT_TIMEOUT = 30
+HUB_REFRESH_INTERVAL = 600  # seconds between hub-detail refreshes
 UPDATE_INTERVAL = timedelta(seconds=DEFAULT_SCAN_INTERVAL)
 
 # Entity status strings seen from the Kubu cloud so far, plus likely siblings.

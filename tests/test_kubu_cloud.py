@@ -148,3 +148,40 @@ async def test_auth_failure_triggers_reauth(hass: HomeAssistant) -> None:
         await hass.async_block_till_done()
     flows = hass.config_entries.flow.async_progress()
     assert any(f["context"]["source"] == "reauth" for f in flows)
+
+
+async def test_hubs_are_cached_between_polls(hass: HomeAssistant) -> None:
+    calls = {"default": 0, "home": 0}
+
+    async def _dash(self, home_id):
+        d = dash()
+        if home_id is None:
+            calls["default"] += 1
+            return d
+        calls["home"] += 1
+        d.pop("things")
+        return d
+
+    with patch("custom_components.kubu_cloud.api.KubuClient.async_login", _login), patch(
+        "custom_components.kubu_cloud.api.KubuClient.async_get_dashboard", _dash
+    ):
+        entry = MockConfigEntry(
+            domain=DOMAIN, unique_id=HOME, title="Home",
+            data={CONF_EMAIL: "a@b.com", CONF_PASSWORD: "pw", CONF_HOME_ID: HOME},
+        )
+        entry.add_to_hass(hass)
+        await hass.config_entries.async_setup(entry.entry_id)
+        await hass.async_block_till_done()
+        coord = entry.runtime_data
+        for _ in range(3):
+            await coord.async_refresh()
+
+        # Per-home dashboard every poll, default-home (hubs) only once.
+        assert calls["home"] == 4
+        assert calls["default"] == 1
+        assert hass.states.get("binary_sensor.kubu_hub_online").state == "on"
+
+        # Cache expiry triggers another hub fetch.
+        coord._hubs_fetched -= 10_000
+        await coord.async_refresh()
+        assert calls["default"] == 2
