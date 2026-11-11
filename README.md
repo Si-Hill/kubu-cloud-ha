@@ -45,7 +45,7 @@ No SSH, no manual token extraction, no YAML.
 
 ## 3. Verify
 
-Open **Settings → Devices & Services → Kubu Cloud**. You should see a hub device and one device per sensor, and the hub's **Last connected** sensor should show a recent time. If it doesn't, check **Settings → System → Logs** for errors from `kubu_cloud`.
+Open **Settings → Devices & Services → Kubu Cloud**. You should see a hub device and one device per sensor, and the hub's **Online** sensor should be on. (**Last connected** shows when the hub last reconnected to the Kubu cloud, so it can be hours old on a healthy hub.) If something looks wrong, check **Settings → System → Logs** for errors from `kubu_cloud`.
 
 ## Entities
 
@@ -55,23 +55,41 @@ Open **Settings → Devices & Services → Kubu Cloud**. You should see a hub de
 | Door sensor | Door | On = open. The `std-d` door sensor reports lock state only, so this shows *unknown* for it; kept for door sensors that do report open/closed |
 | Door sensor | Lock | On = unlocked |
 | Door / window sensor | Not secure | On when not locked (door) or not `secure` (window; it reads `closed` for about a minute after shutting) |
-| Door / window sensor | Status | Raw status text from Kubu |
-| Door / window sensor | Battery | Raw battery status from Kubu |
+| Door / window sensor | Status | Status text from Kubu, capitalised (see [Status words](#status-words)) |
+| Door / window sensor | Battery | Battery text from Kubu, capitalised (`Good`, `Low`, `Critical`) |
 | Door / window sensor | Last update, Online | Diagnostic |
-| Hub | Online, Last connected | Diagnostic |
-| Hub | SureShield armed | Read-only |
+| Hub | Online, Last connected | Diagnostic. Refreshed every 10 minutes (see [Options](#options)) |
+| Hub | SureShield armed | Read-only. Refreshed every poll |
 
 When a sensor is offline its Door/Window, Lock and Not secure entities show *unavailable* rather than a stale state.
+
+## Status words
+
+These are the words the Kubu cloud has reported so far. The Status sensor shows them as-is, capitalised, and the binary sensors are driven by them.
+
+| Sensor | Status | Meaning |
+|---|---|---|
+| Door (`std-d`) | `Locked` | Lock engaged |
+| Door (`std-d`) | `Unlocked` | Lock released. The door sensor does not report whether the door is open |
+| Window (`std-w`) | `Open` | Window open |
+| Window (`std-w`) | `Closed` | Shut, but not yet secured. Lasts about a minute |
+| Window (`std-w`) | `Secure` | Shut and secured |
+
+Battery status words seen: `Good`, `Low`, `Critical`.
+
+Anything else (for example a vent or tilt position, or a tamper alert) is logged once as a warning and shown as-is on the Status sensor, while the binary sensors show *unknown*. Please [open an issue](https://github.com/Si-Hill/kubu-cloud-ha/issues) with any new words you see.
 
 ## Options
 
 **Settings → Devices & Services → Kubu Cloud → Configure** sets the poll interval. Default 60 s, range 30–3600 s.
 
+Sensor states and SureShield armed are fetched on every poll. Hub details (Online, Last connected, firmware) change rarely, so they're refreshed at most every 10 minutes to halve the number of requests to the Kubu cloud. This interval isn't configurable.
+
 ## Notes
 
 - This is cloud polling, so it needs internet access and follows whatever the Kubu cloud reports.
 - Your Kubu login is stored in Home Assistant so the integration can sign in again when the session expires. If Kubu rejects it you'll be asked to re-enter it.
-- Status words seen so far: doors report `locked` and `unlocked`; windows report `open`, `closed` and `secure`. Unmapped words (for example a vent or tilt position) are logged once and shown as-is on the Status sensor; the binary sensors show *unknown* for them. Please [open an issue](https://github.com/Si-Hill/kubu-cloud-ha/issues) with any new status words you see.
+- Automations should compare against the capitalised text (`Locked`, `Unlocked`, `Open`, `Closed`, `Secure`), or better, use the binary sensors.
 - The integration icon needs a recent Home Assistant version; older ones show a placeholder.
 
 ## Licence
